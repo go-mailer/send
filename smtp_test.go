@@ -10,7 +10,7 @@ import (
 var (
 	Host    = "smtp.exmail.qq.com:25"
 	From    = mail.Address{Name: "Lyric", Address: "nianshou.tian@zjelite.com"}
-	FromPwd = "Zjrs123456@"
+	FromPwd = "xxx"
 )
 
 func TestSend(t *testing.T) {
