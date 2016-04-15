@@ -35,7 +35,7 @@ func main() {
 	msg := &send.Message{
 		Subject: "异步发送邮件测试",
 		Content: bytes.NewBufferString("<h1>你好，异步测试邮件内容</h1>"),
-		To:      "<tiannianshou@126.com>",
+		To:      []string{"tiannianshou@126.com"},
 	}
 	err = sender.AsyncSend(msg, false, func(err error) {
 		defer wg.Done()

@@ -22,7 +22,7 @@ func TestSend(t *testing.T) {
 	msg := &Message{
 		Subject: "同步发送邮件测试",
 		Content: bytes.NewBufferString("<h1>你好，同步测试邮件内容</h1>"),
-		To:      []string{"569738722@qq.com"},
+		To:      []string{"tiannianshou@126.com"},
 	}
 	err = sender.Send(msg, false)
 	if err != nil {
@@ -41,7 +41,7 @@ func TestAsyncSend(t *testing.T) {
 	msg := &Message{
 		Subject: "异步发送邮件测试",
 		Content: bytes.NewBufferString("<h1>你好，异步测试邮件内容</h1>"),
-		To:      []string{"569738722@qq.com"},
+		To:      []string{"tiannianshou@126.com"},
 	}
 	err = sender.AsyncSend(msg, false, func(err error) {
 		defer wg.Done()
