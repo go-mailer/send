@@ -1,14 +1,12 @@
 package send
 
-import (
-	"io"
-)
+import "io"
 
 // Message 邮件发送数据
 type Message struct {
 	Subject   string            // 标题
 	Content   io.Reader         // 支持html的消息主体
-	To        string            // 邮箱地址，格式："Alice <alice@example.com>, Bob <bob@example.com>, Eve <eve@example.com>"
+	To        []string          // 邮箱地址
 	Extension map[string]string // 发送邮件消息体扩展项
 }
 

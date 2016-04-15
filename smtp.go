@@ -36,50 +36,36 @@ type SmtpClient struct {
 }
 
 // Send 发送邮件
-func (this *SmtpClient) Send(msg *Message, isMass bool) error {
-	addrs, err := mail.ParseAddressList(msg.To)
-	if err != nil {
-		return err
-	}
+func (this *SmtpClient) Send(msg *Message, isMass bool) (err error) {
 	if isMass {
-		err = this.massSend(addrs, msg)
+		err = this.massSend(msg)
 	} else {
-		err = this.oneSend(addrs, msg)
+		err = this.oneSend(msg)
 	}
-	return err
+	return
 }
 
 // AsyncSend 异步发送邮件
 func (this *SmtpClient) AsyncSend(msg *Message, isMass bool, handle func(err error)) error {
-	addrs, err := mail.ParseAddressList(msg.To)
-	if err != nil {
-		return err
-	}
 	go func() {
-		var err error
-		if isMass {
-			err = this.massSend(addrs, msg)
-		} else {
-			err = this.oneSend(addrs, msg)
-		}
+		err := this.Send(msg, isMass)
 		handle(err)
 	}()
 	return nil
 }
 
 // oneSend 一对一按顺序发送
-func (this *SmtpClient) oneSend(addrs []*mail.Address, msg *Message) error {
-	for _, addr := range addrs {
+func (this *SmtpClient) oneSend(msg *Message) error {
+	for _, addr := range msg.To {
 		header := this.getHeader(msg.Subject)
-		header["To"] = addr.String()
+		header["To"] = addr
 		if msg.Extension != nil {
 			for k, v := range msg.Extension {
 				header[k] = v
 			}
 		}
-		err := smtp.SendMail(this.addr,
-			this.auth, this.from.Address,
-			[]string{addr.Address}, this.getData(header, msg.Content))
+		data := this.getData(header, msg.Content)
+		err := smtp.SendMail(this.addr, this.auth, this.from.Address, []string{addr}, data)
 		if err != nil {
 			return err
 		}
@@ -88,24 +74,15 @@ func (this *SmtpClient) oneSend(addrs []*mail.Address, msg *Message) error {
 }
 
 // massSend 群发邮件
-func (this *SmtpClient) massSend(addrs []*mail.Address, msg *Message) error {
+func (this *SmtpClient) massSend(msg *Message) error {
 	header := this.getHeader(msg.Subject)
 	if msg.Extension != nil {
 		for k, v := range msg.Extension {
 			header[k] = v
 		}
 	}
-	return smtp.SendMail(this.addr,
-		this.auth, this.from.Address,
-		this.getToAddrs(addrs), this.getData(header, msg.Content))
-}
-
-func (this *SmtpClient) getToAddrs(addrs []*mail.Address) []string {
-	toAddrs := make([]string, len(addrs))
-	for i, addr := range addrs {
-		toAddrs[i] = addr.Address
-	}
-	return toAddrs
+	data := this.getData(header, msg.Content)
+	return smtp.SendMail(this.addr, this.auth, this.from.Address, msg.To, data)
 }
 
 func (this *SmtpClient) getHeader(subject string) map[string]string {
